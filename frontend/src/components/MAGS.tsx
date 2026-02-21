@@ -712,8 +712,9 @@ export default function MAGS() {
             </PixelBox>
 
             {/* Severity counters */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, margin: "14px 0" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, margin: "14px 0" }}>
               {[
+                { k: "no_submission_form", l: "NO FORM", c: C.hotPink },
                 { k: "major_nc", l: "MAJOR NC", c: C.red },
                 { k: "minor_nc", l: "MINOR NC", c: C.orange },
                 { k: "general", l: "GENERAL", c: C.cyan },

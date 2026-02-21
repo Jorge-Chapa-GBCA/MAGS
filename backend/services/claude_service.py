@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 # Deterministic scoring: derive overall_score from findings + strengths
 # ---------------------------------------------------------------------------
 SEVERITY_PENALTIES = {
+    "no_submission_form": 100,
     "major_nc": 25,
     "minor_nc": 7,
     "general": 2,
@@ -162,12 +163,13 @@ Check the submission for compliance across three categories:
 3. TERMINOLOGY: Non-standard terms vs GBCA common language, incorrect credit references
 
 For each finding, assign a severity:
+- no_submission_form: The required Green Star submission form/template is completely missing — automatic fail
 - major_nc: Major non-conformance — will definitely cause assessment issues or rejection
 - minor_nc: Minor non-conformance — may cause queries or delays
 - general: General issue — minor improvement suggestions
 
 Respond ONLY with a valid JSON object (no markdown, no explanation):
-{{"summary": "2-3 sentence overview", "findings": [{{"id": "F1", "category": "structural|content|terminology", "severity": "major_nc|minor_nc|general", "title": "Short title", "description": "Detailed issue description", "location": "Where in the document", "suggestion": "How to fix it", "reference": "Relevant guideline reference"}}], "strengths": ["List of things done well"]}}"""
+{{"summary": "2-3 sentence overview", "findings": [{{"id": "F1", "category": "structural|content|terminology", "severity": "no_submission_form|major_nc|minor_nc|general", "title": "Short title", "description": "Detailed issue description", "location": "Where in the document", "suggestion": "How to fix it", "reference": "Relevant guideline reference"}}], "strengths": ["List of things done well"]}}"""
 
     client = _get_client(api_key)
     response = client.messages.create(
