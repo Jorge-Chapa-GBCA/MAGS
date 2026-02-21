@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ParsedDocument(BaseModel):
@@ -40,7 +40,7 @@ class AnalyseRequest(BaseModel):
 class Finding(BaseModel):
     id: str
     category: str  # structural | content | terminology
-    severity: str  # critical | warning | info
+    severity: str  # major_nc | minor_nc | general
     title: str
     description: str
     location: str = ""
@@ -49,7 +49,7 @@ class Finding(BaseModel):
 
 
 class AnalysisResult(BaseModel):
-    overall_score: int
+    overall_score: int = Field(ge=0, le=100)
     summary: str
     findings: list[Finding]
     strengths: list[str]

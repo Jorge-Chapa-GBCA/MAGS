@@ -18,7 +18,7 @@ export interface CreditInfo {
 export interface Finding {
   id: string;
   category: "structural" | "content" | "terminology";
-  severity: "critical" | "warning" | "info";
+  severity: "major_nc" | "minor_nc" | "general";
   title: string;
   description: string;
   location: string;
