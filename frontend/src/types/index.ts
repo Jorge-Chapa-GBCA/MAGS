@@ -31,3 +31,15 @@ export interface AnalysisResult {
   findings: Finding[];
   strengths: string[];
 }
+
+export interface SetupStatus {
+  api_key_set: boolean;
+  reference_docs_loaded: Record<string, number>;
+  ready: boolean;
+}
+
+export interface ReferenceUploadResult {
+  key: string;
+  filename: string;
+  char_count: number;
+}

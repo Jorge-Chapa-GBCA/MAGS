@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 import json
 import re
 import logging
 import os
+from typing import Optional
 
 from anthropic import Anthropic
 from dotenv import load_dotenv
@@ -13,9 +16,18 @@ logger = logging.getLogger(__name__)
 
 load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
 
-client = Anthropic()
-
 MODEL = "claude-sonnet-4-20250514"
+
+# Env-level key loaded once at import time
+_env_api_key: Optional[str] = os.environ.get("ANTHROPIC_API_KEY")
+
+
+def _get_client(api_key: Optional[str] = None) -> Anthropic:
+    """Return an Anthropic client using the supplied key, falling back to .env key."""
+    key = api_key or _env_api_key
+    if not key:
+        raise ValueError("No API key provided and none found in environment")
+    return Anthropic(api_key=key)
 
 
 def _parse_json(text: str) -> dict:
@@ -45,7 +57,7 @@ def _parse_json(text: str) -> dict:
     raise ValueError(f"Could not parse JSON from response: {text[:200]}")
 
 
-def identify_credit(doc_text: str, filename: str) -> CreditInfo:
+def identify_credit(doc_text: str, filename: str, api_key: Optional[str] = None) -> CreditInfo:
     guidelines_docs = get_references_by_prefix("submission_guidelines")
 
     # Include excerpts from all available guideline versions
@@ -68,6 +80,7 @@ Your task: Analyse the uploaded document and identify which Green Star credit it
 Respond ONLY with a valid JSON object (no markdown, no explanation):
 {{"credit_id": "e.g. Energy-1", "credit_name": "Full credit name", "rating_tool": "e.g. Green Star - Design & As Built", "confidence": 0.0, "summary": "Brief description of what this submission covers"}}"""
 
+    client = _get_client(api_key)
     response = client.messages.create(
         model=MODEL,
         max_tokens=1000,
@@ -94,7 +107,7 @@ Respond ONLY with a valid JSON object (no markdown, no explanation):
 
 
 def analyse_submission(
-    doc_text: str, filename: str, credit_info: CreditInfo
+    doc_text: str, filename: str, credit_info: CreditInfo, api_key: Optional[str] = None
 ) -> AnalysisResult:
     assessment_manual = get_reference("assessment_panel_manual")
     common_language = get_reference("common_language_guide")
@@ -135,6 +148,7 @@ For each finding, assign a severity:
 Respond ONLY with a valid JSON object (no markdown, no explanation):
 {{"overall_score": 0-100, "summary": "2-3 sentence overview", "findings": [{{"id": "F1", "category": "structural|content|terminology", "severity": "critical|warning|info", "title": "Short title", "description": "Detailed issue description", "location": "Where in the document", "suggestion": "How to fix it", "reference": "Relevant guideline reference"}}], "strengths": ["List of things done well"]}}"""
 
+    client = _get_client(api_key)
     response = client.messages.create(
         model=MODEL,
         max_tokens=4000,

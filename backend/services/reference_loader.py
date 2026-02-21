@@ -81,3 +81,9 @@ def get_reference(key: str) -> str:
 def get_references_by_prefix(prefix: str) -> dict[str, str]:
     """Get all reference docs whose key starts with a given prefix."""
     return {k: v for k, v in _reference_docs.items() if k.startswith(prefix)}
+
+
+def store_reference(key: str, text: str) -> None:
+    """Insert an uploaded reference doc into the in-memory cache."""
+    _reference_docs[key] = text
+    logger.info(f"Stored reference '{key}' ({len(text)} chars)")

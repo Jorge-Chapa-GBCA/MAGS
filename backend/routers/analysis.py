@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+import os
 import uuid
 import time
 import logging
 
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from typing import Optional
+
+from anthropic import Anthropic
+from fastapi import APIRouter, UploadFile, File, Header, HTTPException
 
 from backend.models.schemas import (
     UploadResponse,
@@ -12,9 +16,15 @@ from backend.models.schemas import (
     IdentifyRequest,
     AnalyseRequest,
     AnalysisResult,
+    SetupStatusResponse,
+    ReferenceUploadResponse,
 )
-from backend.services.document_parser import parse_document
-from backend.services.reference_loader import get_references
+from backend.services.document_parser import parse_document, parse_pdf
+from backend.services.reference_loader import (
+    get_references,
+    store_reference,
+    _key_for_filename,
+)
 from backend.services.claude_service import identify_credit, analyse_submission
 
 logger = logging.getLogger(__name__)
@@ -32,6 +42,69 @@ def _cleanup_sessions():
     for k in expired:
         del _sessions[k]
 
+
+# ---------------------------------------------------------------------------
+# Setup endpoints
+# ---------------------------------------------------------------------------
+
+@router.get("/setup/status", response_model=SetupStatusResponse)
+async def setup_status(x_api_key: Optional[str] = Header(None)):
+    refs = get_references()
+    env_key = os.environ.get("ANTHROPIC_API_KEY")
+    has_key = bool(x_api_key or env_key)
+    ref_info = {k: len(v) for k, v in refs.items()}
+    return SetupStatusResponse(
+        api_key_set=has_key,
+        reference_docs_loaded=ref_info,
+        ready=has_key and len(refs) > 0,
+    )
+
+
+@router.post("/setup/upload-reference", response_model=ReferenceUploadResponse)
+async def upload_reference(file: UploadFile = File(...)):
+    file_bytes = await file.read()
+    if not file_bytes:
+        raise HTTPException(status_code=400, detail="Empty file")
+
+    filename = file.filename or "unknown.pdf"
+    try:
+        doc = parse_pdf(file_bytes, filename)
+    except Exception as e:
+        logger.error(f"Reference parse error for {filename}: {e}")
+        raise HTTPException(status_code=400, detail=f"Could not parse PDF: {e}")
+
+    key = _key_for_filename(filename)
+    store_reference(key, doc.text)
+
+    return ReferenceUploadResponse(
+        key=key,
+        filename=filename,
+        char_count=len(doc.text),
+    )
+
+
+@router.post("/setup/validate-key")
+async def validate_key(x_api_key: Optional[str] = Header(None)):
+    key = x_api_key or os.environ.get("ANTHROPIC_API_KEY")
+    if not key:
+        raise HTTPException(status_code=400, detail="No API key provided")
+
+    try:
+        client = Anthropic(api_key=key)
+        client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=10,
+            messages=[{"role": "user", "content": "Say OK"}],
+        )
+        return {"valid": True}
+    except Exception as e:
+        logger.warning(f"API key validation failed: {e}")
+        raise HTTPException(status_code=401, detail=f"Invalid API key: {e}")
+
+
+# ---------------------------------------------------------------------------
+# Existing endpoints
+# ---------------------------------------------------------------------------
 
 @router.get("/health")
 async def health():
@@ -75,14 +148,14 @@ async def upload_file(file: UploadFile = File(...)):
 
 
 @router.post("/identify", response_model=CreditInfo)
-async def identify(req: IdentifyRequest):
+async def identify(req: IdentifyRequest, x_api_key: Optional[str] = Header(None)):
     session = _sessions.get(req.session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found or expired")
 
     doc = session["doc"]
     try:
-        credit = identify_credit(doc.text, doc.filename)
+        credit = identify_credit(doc.text, doc.filename, api_key=x_api_key)
     except Exception as e:
         logger.error(f"Identify error: {e}")
         raise HTTPException(status_code=500, detail=f"Credit identification failed: {e}")
@@ -94,14 +167,14 @@ async def identify(req: IdentifyRequest):
 
 
 @router.post("/analyse", response_model=AnalysisResult)
-async def analyse(req: AnalyseRequest):
+async def analyse(req: AnalyseRequest, x_api_key: Optional[str] = Header(None)):
     session = _sessions.get(req.session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found or expired")
 
     doc = session["doc"]
     try:
-        result = analyse_submission(doc.text, doc.filename, req.credit_info)
+        result = analyse_submission(doc.text, doc.filename, req.credit_info, api_key=x_api_key)
     except Exception as e:
         logger.error(f"Analysis error: {e}")
         raise HTTPException(status_code=500, detail=f"Analysis failed: {e}")

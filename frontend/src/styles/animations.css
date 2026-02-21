@@ -35,10 +35,31 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-100%); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleReveal {
+  0% { opacity: 0; transform: scale(0.3); filter: blur(10px); }
+  60% { opacity: 1; transform: scale(1.08); filter: blur(0); }
+  100% { opacity: 1; transform: scale(1); filter: blur(0); }
+}
+
+@keyframes bootFade {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
 @keyframes fadeOut {
   0% { opacity: 1; }
   75% { opacity: 1; }
   100% { opacity: 0; pointer-events: none; }
+}
+
+@keyframes glowPulse {
+  0%, 100% { text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 40px currentColor; }
+  50% { text-shadow: 0 0 20px currentColor, 0 0 40px currentColor, 0 0 80px currentColor; }
 }
 
 * { box-sizing: border-box; }

@@ -52,3 +52,15 @@ class AnalysisResult(BaseModel):
     summary: str
     findings: list[Finding]
     strengths: list[str]
+
+
+class SetupStatusResponse(BaseModel):
+    api_key_set: bool
+    reference_docs_loaded: dict[str, int]  # key -> char_count
+    ready: bool
+
+
+class ReferenceUploadResponse(BaseModel):
+    key: str
+    filename: str
+    char_count: int
