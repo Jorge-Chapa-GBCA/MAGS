@@ -712,11 +712,12 @@ export default function MAGS() {
             </PixelBox>
 
             {/* Severity counters */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, margin: "14px 0" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, margin: "14px 0" }}>
               {[
-                { k: "critical", l: "CRITICAL", c: C.red },
-                { k: "warning", l: "WARNING", c: C.orange },
-                { k: "info", l: "INFO", c: C.cyan },
+                { k: "no_submission_form", l: "NO FORM", c: C.hotPink },
+                { k: "major_nc", l: "MAJOR NC", c: C.red },
+                { k: "minor_nc", l: "MINOR NC", c: C.orange },
+                { k: "general", l: "GENERAL", c: C.cyan },
               ].map(s => (
                 <div key={s.k} onClick={() => setFilter(filter === s.k ? "all" : s.k)} style={{
                   background: `${s.c}25`, border: `3px solid ${filter === s.k ? C.white : s.c}`,

@@ -14,6 +14,27 @@ from backend.services.reference_loader import get_reference, get_references_by_p
 
 logger = logging.getLogger(__name__)
 
+# ---------------------------------------------------------------------------
+# Deterministic scoring: derive overall_score from findings + strengths
+# ---------------------------------------------------------------------------
+SEVERITY_PENALTIES = {
+    "no_submission_form": 100,
+    "major_nc": 25,
+    "minor_nc": 7,
+    "general": 2,
+}
+STRENGTH_BONUS = 2
+STRENGTH_BONUS_CAP = 10
+
+
+def compute_score(findings: list[Finding], strengths: list[str]) -> int:
+    """Compute a 0-100 compliance score from findings and strengths."""
+    score = 100
+    for f in findings:
+        score -= SEVERITY_PENALTIES.get(f.severity, 0)
+    score += min(len(strengths) * STRENGTH_BONUS, STRENGTH_BONUS_CAP)
+    return max(0, min(score, 100))
+
 load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
 
 MODEL = "claude-sonnet-4-20250514"
@@ -142,12 +163,13 @@ Check the submission for compliance across three categories:
 3. TERMINOLOGY: Non-standard terms vs GBCA common language, incorrect credit references
 
 For each finding, assign a severity:
-- critical: Will definitely cause assessment issues or rejection
-- warning: May cause queries or delays
-- info: Minor improvement suggestions
+- no_submission_form: The required Green Star submission form/template is completely missing — automatic fail
+- major_nc: Major non-conformance — will definitely cause assessment issues or rejection
+- minor_nc: Minor non-conformance — may cause queries or delays
+- general: General issue — minor improvement suggestions
 
 Respond ONLY with a valid JSON object (no markdown, no explanation):
-{{"overall_score": 0-100, "summary": "2-3 sentence overview", "findings": [{{"id": "F1", "category": "structural|content|terminology", "severity": "critical|warning|info", "title": "Short title", "description": "Detailed issue description", "location": "Where in the document", "suggestion": "How to fix it", "reference": "Relevant guideline reference"}}], "strengths": ["List of things done well"]}}"""
+{{"summary": "2-3 sentence overview", "findings": [{{"id": "F1", "category": "structural|content|terminology", "severity": "no_submission_form|major_nc|minor_nc|general", "title": "Short title", "description": "Detailed issue description", "location": "Where in the document", "suggestion": "How to fix it", "reference": "Relevant guideline reference"}}], "strengths": ["List of things done well"]}}"""
 
     client = _get_client(api_key)
     response = client.messages.create(
@@ -172,7 +194,7 @@ Respond ONLY with a valid JSON object (no markdown, no explanation):
             Finding(
                 id=f.get("id", "F?"),
                 category=f.get("category", "content"),
-                severity=f.get("severity", "info"),
+                severity=f.get("severity", "general"),
                 title=f.get("title", "Untitled"),
                 description=f.get("description", ""),
                 location=f.get("location", ""),
@@ -181,9 +203,11 @@ Respond ONLY with a valid JSON object (no markdown, no explanation):
             )
         )
 
+    strengths = data.get("strengths", [])
+
     return AnalysisResult(
-        overall_score=int(data.get("overall_score", 0)),
+        overall_score=compute_score(findings, strengths),
         summary=data.get("summary", "Analysis complete."),
         findings=findings,
-        strengths=data.get("strengths", []),
+        strengths=strengths,
     )
