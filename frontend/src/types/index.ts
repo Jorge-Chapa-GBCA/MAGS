@@ -10,6 +10,7 @@ export interface CreditInfo {
   credit_id: string;
   credit_name: string;
   rating_tool: string;
+  project_name: string;
   confidence: number;
   summary: string;
 }

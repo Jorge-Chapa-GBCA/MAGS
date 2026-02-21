@@ -78,7 +78,7 @@ You have deep knowledge of Green Star rating tools and credits. Use the followin
 Your task: Analyse the uploaded document and identify which Green Star credit it relates to.
 
 Respond ONLY with a valid JSON object (no markdown, no explanation):
-{{"credit_id": "e.g. Energy-1", "credit_name": "Full credit name", "rating_tool": "e.g. Green Star - Design & As Built", "confidence": 0.0, "summary": "Brief description of what this submission covers"}}"""
+{{"credit_id": "e.g. Energy-1", "credit_name": "Full credit name", "rating_tool": "e.g. Green Star - Design & As Built v1.3", "project_name": "The project/building name if mentioned", "confidence": 0.0, "summary": "Brief description of what this submission covers"}}"""
 
     client = _get_client(api_key)
     response = client.messages.create(
@@ -101,6 +101,7 @@ Respond ONLY with a valid JSON object (no markdown, no explanation):
         credit_id=data.get("credit_id", "???"),
         credit_name=data.get("credit_name", "Unknown Credit"),
         rating_tool=data.get("rating_tool", "Unknown"),
+        project_name=data.get("project_name", ""),
         confidence=float(data.get("confidence", 0)),
         summary=data.get("summary", ""),
     )

@@ -29,6 +29,157 @@ const EXPECTED_REFS: { prefix: string; label: string }[] = [
 ];
 
 
+// Pixel smiley face for the analysis screen
+// Each row is a bitmask — 1 = filled pixel, 0 = empty
+const FACE_NEUTRAL = [
+  // eyes: two 2x2 blocks
+  [0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,1,1,0,0,0,0,0,1,1,0,0],
+  [0,0,1,1,0,0,0,0,0,1,1,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0],
+  // nose
+  [0,0,0,0,0,0,1,0,0,0,0,0,0],
+  [0,0,0,0,0,0,1,0,0,0,0,0,0],
+  [0,0,0,0,0,1,1,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0],
+  // mouth: smile
+  [0,0,1,0,0,0,0,0,0,0,1,0,0],
+  [0,0,0,1,1,1,1,1,1,1,0,0,0],
+];
+
+const FACE_THINK = [
+  // eyes: left squint, right wide
+  [0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,1,1,0,0,0,0,0,1,1,0,0],
+  [0,0,0,0,0,0,0,0,0,1,1,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0],
+  // nose
+  [0,0,0,0,0,0,1,0,0,0,0,0,0],
+  [0,0,0,0,0,0,1,0,0,0,0,0,0],
+  [0,0,0,0,0,1,1,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0],
+  // mouth: wavy/thinking
+  [0,0,0,0,1,1,0,1,1,0,0,0,0],
+  [0,0,0,1,0,0,1,0,0,1,0,0,0],
+];
+
+const FACE_OOH = [
+  // eyes wide
+  [0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,1,1,1,0,0,0,0,1,1,1,0,0],
+  [0,1,1,1,0,0,0,0,1,1,1,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0],
+  // nose
+  [0,0,0,0,0,0,1,0,0,0,0,0,0],
+  [0,0,0,0,0,0,1,0,0,0,0,0,0],
+  [0,0,0,0,0,1,1,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0],
+  // mouth: O shape
+  [0,0,0,0,0,1,1,1,0,0,0,0,0],
+  [0,0,0,0,0,1,0,1,0,0,0,0,0],
+];
+
+const FACE_GRIN = [
+  // eyes: happy squint
+  [0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,1,1,0,0,0,0,0,1,1,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0],
+  // nose
+  [0,0,0,0,0,0,1,0,0,0,0,0,0],
+  [0,0,0,0,0,0,1,0,0,0,0,0,0],
+  [0,0,0,0,0,1,1,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0],
+  // mouth: big grin
+  [0,1,0,0,0,0,0,0,0,0,0,1,0],
+  [0,0,1,1,1,1,1,1,1,1,1,0,0],
+];
+
+const FACES = [FACE_NEUTRAL, FACE_THINK, FACE_OOH, FACE_GRIN];
+
+function PixelFace({ grid, color, size = 8 }: { grid: number[][]; color: string; size?: number }) {
+  const gap = 2;
+  const w = grid[0].length * (size + gap);
+  const h = grid.length * (size + gap);
+  return (
+    <div style={{ width: w, height: h, position: "relative", margin: "0 auto" }}>
+      {grid.map((row, y) =>
+        row.map((cell, x) =>
+          cell ? (
+            <div key={`${y}-${x}`} style={{
+              position: "absolute",
+              left: x * (size + gap),
+              top: y * (size + gap),
+              width: size,
+              height: size,
+              background: color,
+              boxShadow: `0 0 ${size}px ${color}60`,
+            }} />
+          ) : null
+        )
+      )}
+    </div>
+  );
+}
+
+function IdentifyingFace() {
+  const [faceIdx, setFaceIdx] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setFaceIdx(f => (f + 1) % 2), 1400);
+    return () => clearInterval(t);
+  }, []);
+  return <PixelFace grid={[FACE_NEUTRAL, FACE_THINK][faceIdx]} color={C.lime} size={8} />;
+}
+
+function AnalysingScreen({ creditName }: { creditName: string }) {
+  const [faceIdx, setFaceIdx] = useState(0);
+  const [dots, setDots] = useState(0);
+  const [taskIdx, setTaskIdx] = useState(0);
+
+  useEffect(() => {
+    const a = setInterval(() => setFaceIdx(f => (f + 1) % FACES.length), 1800);
+    const b = setInterval(() => setDots(d => (d + 1) % 4), 500);
+    const c = setInterval(() => setTaskIdx(t => (t + 1) % 4), 2200);
+    return () => { clearInterval(a); clearInterval(b); clearInterval(c); };
+  }, []);
+
+  const tasks = ["parsing structure", "checking requirements", "scanning terminology", "crunching numbers"];
+  const G = C.lime;
+
+  return (
+    <PixelBox title="analysis.exe" color={C.border} style={{ animation: "slideIn 0.3s ease" }}>
+      <div style={{ padding: 28 }}>
+        {/* Pixel smiley */}
+        <div style={{ marginBottom: 24 }}>
+          <PixelFace grid={FACES[faceIdx]} color={G} size={8} />
+        </div>
+
+        {/* Status text */}
+        <div style={{ textAlign: "center", fontSize: 20, color: G, marginBottom: 6, textShadow: `0 0 10px ${G}40` }}>
+          {tasks[taskIdx]}{".".repeat(dots)}
+        </div>
+        <div style={{ textAlign: "center", fontSize: 16, color: C.sky }}>
+          checking <span style={{ color: C.yellow }}>{creditName}</span>
+        </div>
+
+        {/* Progress tasks */}
+        <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 4 }}>
+          {tasks.map((t, i) => (
+            <div key={i} style={{
+              textAlign: "center", fontSize: 15,
+              color: i < taskIdx ? G : i === taskIdx ? C.cyan : `${C.border}`,
+              animation: i === taskIdx ? "blink 1.5s ease infinite" : "none",
+            }}>
+              {i < taskIdx ? "\u2713" : i === taskIdx ? "\u25B6" : "\u25CB"} {t}
+            </div>
+          ))}
+        </div>
+      </div>
+    </PixelBox>
+  );
+}
+
+
 export default function MAGS() {
   const [step, setStep] = useState<number | null>(null); // null = loading
   const [file, setFile] = useState<File | null>(null);
@@ -482,7 +633,10 @@ export default function MAGS() {
         {step === STEPS.IDENTIFYING && (
           <PixelBox title="scanning.exe" color={C.border} style={{ animation: "slideIn 0.3s ease" }}>
             <div style={{ padding: 28 }}>
-              <Loader text="reading ur document" />
+              <IdentifyingFace />
+              <div style={{ textAlign: "center", fontSize: 20, color: C.lime, marginTop: 16, textShadow: `0 0 10px ${C.lime}40` }}>
+                reading ur document
+              </div>
               <div style={{ textAlign: "center", fontSize: 16, color: C.sky, marginTop: 6 }}>
                 analysing <span style={{ color: C.yellow }}>{file?.name}</span>
               </div>
@@ -497,6 +651,14 @@ export default function MAGS() {
               <div style={{ padding: 22 }}>
                 <div style={{ textAlign: "center", marginBottom: 18 }}>
                   <div style={{ fontSize: 28, color: C.lime, textShadow: `0 0 12px ${C.lime}30` }}>found it!!</div>
+                  <div style={{ fontSize: 18, color: C.sky, marginTop: 6 }}>
+                    i can't wait to review this credit{creditInfo.project_name ? " for:" : ""}
+                  </div>
+                  {creditInfo.project_name && (
+                    <div style={{ fontSize: 24, color: C.yellow, marginTop: 4, textShadow: `0 0 8px ${C.yellow}30` }}>
+                      {creditInfo.project_name}
+                    </div>
+                  )}
                 </div>
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 18 }}>
@@ -532,19 +694,7 @@ export default function MAGS() {
         )}
 
         {/* ANALYSING */}
-        {step === STEPS.ANALYSING && (
-          <PixelBox title="analysis.exe" color={C.border} style={{ animation: "slideIn 0.3s ease" }}>
-            <div style={{ padding: 28 }}>
-              <Loader text="checking compliance" />
-              <div style={{ textAlign: "center", fontSize: 16, color: C.sky, marginTop: 4, marginBottom: 14 }}>
-                checking <span style={{ color: C.yellow }}>{creditInfo?.credit_name}</span>
-              </div>
-              {["parsing structure...", "checking requirements...", "scanning terminology...", "crunching numbers..."].map((l, i) => (
-                <div key={i} style={{ textAlign: "center", fontSize: 16, color: C.lime, marginBottom: 5, animation: `slideIn 0.4s ease ${i * 0.5}s both`, opacity: 0 }}>{l}</div>
-              ))}
-            </div>
-          </PixelBox>
-        )}
+        {step === STEPS.ANALYSING && <AnalysingScreen creditName={creditInfo?.credit_name || ""} />}
 
         {/* RESULTS */}
         {step === STEPS.RESULTS && results && (

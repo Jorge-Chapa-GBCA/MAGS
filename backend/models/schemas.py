@@ -23,6 +23,7 @@ class CreditInfo(BaseModel):
     credit_id: str
     credit_name: str
     rating_tool: str
+    project_name: str = ""
     confidence: float
     summary: str
 
