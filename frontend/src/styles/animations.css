@@ -1,0 +1,49 @@
+@import url('https://fonts.googleapis.com/css2?family=VT323&family=Silkscreen:wght@400;700&display=swap');
+
+@keyframes twinkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.2; transform: scale(0.5); }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes rainbow {
+  0% { color: #FF6B6B; }
+  16% { color: #FF8C00; }
+  33% { color: #FFD700; }
+  50% { color: #7CFC00; }
+  66% { color: #00FFFF; }
+  83% { color: #FF69B4; }
+  100% { color: #FF6B6B; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  75% { opacity: 1; }
+  100% { opacity: 0; pointer-events: none; }
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; }
+
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: #16213e; }
+::-webkit-scrollbar-thumb { background: #333366; }
