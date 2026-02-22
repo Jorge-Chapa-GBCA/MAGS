@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 import { C } from "../../styles/theme";
+import { useMode } from "../../context/ModeContext";
 
 interface RetroBtnProps {
   children: ReactNode;
@@ -10,8 +11,31 @@ interface RetroBtnProps {
   style?: CSSProperties;
 }
 
-export function RetroBtn({ children, onClick, color = C.lime, bg, textColor, style: s = {} }: RetroBtnProps) {
-  const bgColor = bg || `linear-gradient(180deg, ${color} 0%, ${color}bb 100%)`;
+export function RetroBtn({ children, onClick, color, bg, textColor, style: s = {} }: RetroBtnProps) {
+  const { mode, colors } = useMode();
+
+  if (mode === "board") {
+    const btnBg = bg || color || colors.lime;
+    const txtColor = textColor || "#FFFFFF";
+    return (
+      <button onClick={onClick} style={{
+        background: btnBg, color: txtColor,
+        border: "none", borderRadius: 5,
+        padding: "10px 22px", fontSize: 14, fontWeight: 500,
+        cursor: "pointer", fontFamily: "'Roboto', sans-serif",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
+        transition: "box-shadow 0.2s, transform 0.15s",
+        ...s,
+      }}
+      onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 3px 8px rgba(0,0,0,0.18)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+      onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.12)"; e.currentTarget.style.transform = ""; }}
+      >{children}</button>
+    );
+  }
+
+  // Fun mode (original)
+  const btnColor = color || C.lime;
+  const bgColor = bg || `linear-gradient(180deg, ${btnColor} 0%, ${btnColor}bb 100%)`;
   const txtColor = textColor || C.black;
   return (
     <button onClick={onClick} style={{

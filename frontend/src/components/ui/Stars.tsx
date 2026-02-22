@@ -1,6 +1,11 @@
 import { C } from "../../styles/theme";
+import { useMode } from "../../context/ModeContext";
 
 export function Stars({ count = 18 }: { count?: number }) {
+  const { mode } = useMode();
+
+  if (mode === "board") return null;
+
   const stars = Array.from({ length: count }, () => ({
     left: `${Math.random() * 100}%`,
     top: `${Math.random() * 100}%`,

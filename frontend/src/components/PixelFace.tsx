@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { C } from "../styles/theme";
 import { PixelBox } from "./ui";
+import { useMode } from "../context/ModeContext";
 
 // Pixel smiley face bitmasks — 1 = filled pixel, 0 = empty
 // Eyes are 2 wide × 3 tall, no nose
@@ -179,44 +180,38 @@ export function HappyFace({ color = C.lime, size = 8, excited = false }: { color
   );
 }
 
-const SCANNING_QUIPS = [
-  "hmm, interesting...",
-  "ooh i've seen one of these before",
-  "reading every last pixel",
-  "this is giving Green Star energy",
-  "let me put my glasses on",
-  "flipping through the pages",
-  "ok ok i think i know what this is",
-  "just a sec, nearly there",
-  "doing my best speed-read",
-  "i promise i'm not just looking at the pictures",
-];
-
-const ANALYSIS_QUIPS = [
-  "checking the fine print",
-  "sharpening my red pen",
-  "i live for a good submission form",
-  "cross-referencing everything",
-  "being thorough so you don't have to be",
-  "this is the fun part (for me)",
-  "no stone left unturned",
-  "channelling my inner assessor",
-  "triple-checking my findings",
-  "almost done, hold tight",
-];
+function BoardSpinner({ color = "#229C47" }: { color?: string }) {
+  return (
+    <div style={{
+      width: 40, height: 40, margin: "0 auto",
+      border: `3px solid #E8E8E8`,
+      borderTop: `3px solid ${color}`,
+      borderRadius: "50%",
+      animation: "spin 0.8s linear infinite",
+    }}>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
+}
 
 export function IdentifyingFace() {
+  const { mode } = useMode();
   const [faceIdx, setFaceIdx] = useState(0);
   useEffect(() => {
     const t = setInterval(() => setFaceIdx(f => (f + 1) % 2), 1400);
     return () => clearInterval(t);
   }, []);
+
+  if (mode === "board") return <BoardSpinner />;
   return <PixelFace grid={[FACE_NEUTRAL, FACE_THINK][faceIdx]} color={C.lime} size={8} />;
 }
 
 export function ScanningScreen({ fileName }: { fileName?: string }) {
+  const { mode, colors, T } = useMode();
+  const isBoard = mode === "board";
+
   const [faceIdx, setFaceIdx] = useState(0);
-  const [quipIdx, setQuipIdx] = useState(() => Math.floor(Math.random() * SCANNING_QUIPS.length));
+  const [quipIdx, setQuipIdx] = useState(() => Math.floor(Math.random() * T.scanningQuips.length));
   const faceCount = useRef(0);
 
   useEffect(() => {
@@ -224,21 +219,35 @@ export function ScanningScreen({ fileName }: { fileName?: string }) {
       faceCount.current += 1;
       setFaceIdx(f => (f + 1) % SCANNING_FACES.length);
       if (faceCount.current % 2 === 0) {
-        setQuipIdx(q => (q + 1) % SCANNING_QUIPS.length);
+        setQuipIdx(q => (q + 1) % T.scanningQuips.length);
       }
     }, 1400);
     return () => clearInterval(a);
-  }, []);
+  }, [T.scanningQuips.length]);
 
   return (
-    <PixelBox title="scanning.exe" color={C.border} style={{ animation: "slideIn 0.3s ease" }}>
+    <PixelBox title={T.scanningTitle} color={isBoard ? colors.green : C.border} style={{ animation: "slideIn 0.3s ease" }}>
       <div style={{ padding: 28 }}>
-        <PixelFace grid={SCANNING_FACES[faceIdx]} color={C.lime} size={8} />
-        <div style={{ textAlign: "center", fontSize: 18, color: C.lime, marginTop: 12, textShadow: `0 0 10px ${C.lime}40` }}>
-          {SCANNING_QUIPS[quipIdx]}
+        {isBoard
+          ? <BoardSpinner color={colors.green} />
+          : <PixelFace grid={SCANNING_FACES[faceIdx]} color={C.lime} size={8} />
+        }
+        <div style={{
+          textAlign: "center", fontSize: isBoard ? 14 : 18,
+          color: isBoard ? "#555" : C.lime,
+          marginTop: 12,
+          textShadow: isBoard ? undefined : `0 0 10px ${C.lime}40`,
+          fontFamily: isBoard ? "'Roboto', sans-serif" : undefined,
+        }}>
+          {T.scanningQuips[quipIdx]}
         </div>
-        <div style={{ textAlign: "center", fontSize: 16, color: C.sky, marginTop: 10 }}>
-          reading <span style={{ color: C.yellow }}>{fileName}</span>
+        <div style={{
+          textAlign: "center", fontSize: isBoard ? 13 : 16,
+          color: isBoard ? "#888" : C.sky,
+          marginTop: 10,
+          fontFamily: isBoard ? "'Roboto', sans-serif" : undefined,
+        }}>
+          {T.scanningPrefix} <span style={{ color: isBoard ? "#303030" : C.yellow, fontWeight: isBoard ? 500 : undefined }}>{fileName}</span>
         </div>
       </div>
     </PixelBox>
@@ -246,10 +255,13 @@ export function ScanningScreen({ fileName }: { fileName?: string }) {
 }
 
 export function AnalysingScreen({ creditName }: { creditName: string }) {
+  const { mode, colors, T } = useMode();
+  const isBoard = mode === "board";
+
   const [faceIdx, setFaceIdx] = useState(0);
   const [dots, setDots] = useState(0);
   const [taskIdx, setTaskIdx] = useState(0);
-  const [quipIdx, setQuipIdx] = useState(() => Math.floor(Math.random() * ANALYSIS_QUIPS.length));
+  const [quipIdx, setQuipIdx] = useState(() => Math.floor(Math.random() * T.analysisQuips.length));
   const faceCount = useRef(0);
 
   useEffect(() => {
@@ -257,42 +269,65 @@ export function AnalysingScreen({ creditName }: { creditName: string }) {
       faceCount.current += 1;
       setFaceIdx(f => (f + 1) % ANALYSIS_FACES.length);
       if (faceCount.current % 2 === 0) {
-        setQuipIdx(q => (q + 1) % ANALYSIS_QUIPS.length);
+        setQuipIdx(q => (q + 1) % T.analysisQuips.length);
       }
     }, 1800);
     const b = setInterval(() => setDots(d => (d + 1) % 4), 500);
     const c = setInterval(() => setTaskIdx(t => (t + 1) % 4), 2200);
     return () => { clearInterval(a); clearInterval(b); clearInterval(c); };
-  }, []);
+  }, [T.analysisQuips.length]);
 
-  const tasks = ["parsing structure", "checking requirements", "scanning terminology", "crunching numbers"];
-  const G = C.lime;
+  const tasks = isBoard
+    ? ["Parsing structure", "Checking requirements", "Scanning terminology", "Compiling results"]
+    : ["parsing structure", "checking requirements", "scanning terminology", "crunching numbers"];
+  const G = colors.lime;
 
   return (
-    <PixelBox title="analysis.exe" color={C.border} style={{ animation: "slideIn 0.3s ease" }}>
+    <PixelBox title={T.analysisTitle} color={isBoard ? colors.green : C.border} style={{ animation: "slideIn 0.3s ease" }}>
       <div style={{ padding: 28 }}>
         <div style={{ marginBottom: 24 }}>
-          <PixelFace grid={ANALYSIS_FACES[faceIdx]} color={G} size={8} />
+          {isBoard
+            ? <BoardSpinner color={colors.green} />
+            : <PixelFace grid={ANALYSIS_FACES[faceIdx]} color={G} size={8} />
+          }
         </div>
 
-        <div style={{ textAlign: "center", fontSize: 18, color: G, marginBottom: 8, textShadow: `0 0 10px ${G}40` }}>
-          {ANALYSIS_QUIPS[quipIdx]}
+        <div style={{
+          textAlign: "center", fontSize: isBoard ? 14 : 18,
+          color: isBoard ? "#555" : G,
+          marginBottom: 8,
+          textShadow: isBoard ? undefined : `0 0 10px ${G}40`,
+          fontFamily: isBoard ? "'Roboto', sans-serif" : undefined,
+        }}>
+          {T.analysisQuips[quipIdx]}
         </div>
 
-        <div style={{ textAlign: "center", fontSize: 16, color: C.sky, marginBottom: 12 }}>
-          checking <span style={{ color: C.yellow }}>{creditName}</span>
+        <div style={{
+          textAlign: "center", fontSize: isBoard ? 13 : 16,
+          color: isBoard ? "#888" : C.sky,
+          marginBottom: 12,
+          fontFamily: isBoard ? "'Roboto', sans-serif" : undefined,
+        }}>
+          {T.analysingPrefix} <span style={{ color: isBoard ? "#303030" : C.yellow, fontWeight: isBoard ? 500 : undefined }}>{creditName}</span>
         </div>
 
-        <div style={{ textAlign: "center", fontSize: 15, color: G, marginBottom: 6, textShadow: `0 0 10px ${G}40` }}>
+        <div style={{
+          textAlign: "center", fontSize: isBoard ? 13 : 15,
+          color: isBoard ? colors.green : G,
+          marginBottom: 6,
+          textShadow: isBoard ? undefined : `0 0 10px ${G}40`,
+          fontFamily: isBoard ? "'Roboto', sans-serif" : undefined,
+        }}>
           {tasks[taskIdx]}{".".repeat(dots)}
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           {tasks.map((t, i) => (
             <div key={i} style={{
-              textAlign: "center", fontSize: 15,
-              color: i < taskIdx ? G : i === taskIdx ? C.cyan : `${C.border}`,
-              animation: i === taskIdx ? "blink 1.5s ease infinite" : "none",
+              textAlign: "center", fontSize: isBoard ? 13 : 15,
+              color: i < taskIdx ? (isBoard ? colors.green : G) : i === taskIdx ? (isBoard ? "#303030" : C.cyan) : (isBoard ? "#CCCCCC" : `${C.border}`),
+              animation: i === taskIdx ? (isBoard ? undefined : "blink 1.5s ease infinite") : "none",
+              fontFamily: isBoard ? "'Roboto', sans-serif" : undefined,
             }}>
               {i < taskIdx ? "\u2713" : i === taskIdx ? "\u25B6" : "\u25CB"} {t}
             </div>
