@@ -212,6 +212,27 @@ export function SetupScreen({ onInitialise }: Props) {
             <span style={{ color: DIM, fontSize: 20, animation: "blink 1.2s step-end infinite" }}>_</span>
           )}
         </div>
+
+        {/* Reset everything */}
+        {setupReady && (
+          <div style={{ marginTop: 48, textAlign: "center" }}>
+            <span
+              onClick={() => {
+                clearApiKey();
+                setApiKeyInput("");
+                setApiKeyValid(null);
+                setSetupStatus(null);
+                setSetupError(null);
+                refreshSetup();
+              }}
+              style={{ color: "#333", fontSize: 14, cursor: "pointer", letterSpacing: 1 }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = "#666"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = "#333"; }}
+            >
+              reload everything
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

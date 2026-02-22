@@ -10,7 +10,7 @@ import {
 } from "../api/client";
 import type { CreditInfo, AnalysisResult } from "../types";
 
-import { IdentifyingFace, AnalysingScreen } from "./PixelFace";
+import { ScanningScreen, AnalysingScreen } from "./PixelFace";
 import { SetupScreen } from "./screens/SetupScreen";
 import { UploadScreen } from "./screens/UploadScreen";
 import { IdentifiedScreen } from "./screens/IdentifiedScreen";
@@ -41,7 +41,7 @@ export default function MAGS() {
           setStep(STEPS.UPLOAD);
           setSplash(false);
           setBooting(true);
-          setTimeout(() => setBooting(false), 5000);
+          setTimeout(() => setBooting(false), 9000);
         } else {
           setStep(STEPS.SETUP);
           setSplash(false);
@@ -60,7 +60,7 @@ export default function MAGS() {
   const handleInitialise = useCallback(() => {
     setStep(STEPS.UPLOAD);
     setBooting(true);
-    setTimeout(() => setBooting(false), 5000);
+    setTimeout(() => setBooting(false), 9000);
   }, []);
 
   const onFile = useCallback(async (f: File | undefined) => {
@@ -176,17 +176,7 @@ export default function MAGS() {
         )}
 
         {step === STEPS.IDENTIFYING && (
-          <PixelBox title="scanning.exe" color={C.border} style={{ animation: "slideIn 0.3s ease" }}>
-            <div style={{ padding: 28 }}>
-              <IdentifyingFace />
-              <div style={{ textAlign: "center", fontSize: 20, color: C.lime, marginTop: 16, textShadow: `0 0 10px ${C.lime}40` }}>
-                reading ur document
-              </div>
-              <div style={{ textAlign: "center", fontSize: 16, color: C.sky, marginTop: 6 }}>
-                analysing <span style={{ color: C.yellow }}>{file?.name}</span>
-              </div>
-            </div>
-          </PixelBox>
+          <ScanningScreen fileName={file?.name} />
         )}
 
         {step === STEPS.IDENTIFIED && creditInfo && (
