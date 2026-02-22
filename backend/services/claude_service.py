@@ -159,10 +159,10 @@ Use the following GBCA reference documents to inform your assessment:
 {ref_context}
 --- END REFERENCE DOCUMENTS ---
 
-Check the submission for compliance across three categories:
+Check the submission for compliance against the relevant credit in the submission guidelines. Categorise findings across three categories:
 1. STRUCTURAL: Missing sections, incorrect templates, formatting issues, missing required forms
-2. CONTENT: Evidence gaps, unsubstantiated claims, missing calculations, incomplete data
-3. TERMINOLOGY: Non-standard terms vs GBCA common language, incorrect credit references
+2. CONTENT: Review against the relevant credit requirements and documentation against the Submission Guidelines
+3. TERMINOLOGY: Non-standard terms, incorrect credit references, check against Submission Guidelines
 
 For each finding, assign a severity:
 - no_submission_form: Critical — the required Green Star submission form/template is completely missing (automatic fail)
@@ -176,7 +176,7 @@ Respond ONLY with a valid JSON object (no markdown, no explanation):
     client = _get_client(api_key)
     response = client.messages.create(
         model=MODEL,
-        max_tokens=4000,
+        max_tokens=8000,
         temperature=0,
         system=system_prompt,
         messages=[
