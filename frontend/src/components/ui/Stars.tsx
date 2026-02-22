@@ -11,7 +11,7 @@ export function Stars({ count = 18 }: { count?: number }) {
     top: `${Math.random() * 100}%`,
     delay: `${Math.random() * 3}s`,
     size: Math.random() > 0.5 ? 12 : 8,
-    char: ["\u2726", "\u2727", "\u22C6", "\u2736", "\u2605"][Math.floor(Math.random() * 5)],
+    char: "\u2726",
     color: [C.yellow, C.hotPink, C.cyan, C.lime, C.purple][Math.floor(Math.random() * 5)],
   }));
   return (
