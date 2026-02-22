@@ -1,11 +1,7 @@
 import { useState, useRef } from "react";
 import { C } from "../../styles/theme";
 import { PixelBox } from "../ui";
-
-const pixelStyle: React.CSSProperties = {
-  imageRendering: "pixelated",
-  filter: "drop-shadow(0 0 3px rgba(124, 252, 0, 0.5))",
-};
+import { HappyFace } from "../PixelFace";
 
 interface Props {
   booting: boolean;
@@ -39,7 +35,7 @@ export function UploadScreen({ booting, bootIn, onFile, error }: Props) {
           fontSize: 20, color: C.sky, marginTop: 10, lineHeight: 1.5,
           ...bootIn(2.8, "slideIn 0.5s ease"),
         }}>
-          ur friendly neighbourhood<br />Machine-Assisted Green Star<br />reviewer
+          ur friendly neighbourhood Machine-Assisted Green Star reviewer
         </div>
         <div style={{
           fontSize: 16, color: C.lavender, marginTop: 12, lineHeight: 1.6, maxWidth: 520, marginLeft: "auto", marginRight: "auto",
@@ -64,7 +60,9 @@ export function UploadScreen({ booting, bootIn, onFile, error }: Props) {
               background: dragOver ? `${C.lime}12` : "transparent",
             }}
           >
-            <img src="/images/diamond-pixel.png" alt="" width={56} height={56} style={{ ...pixelStyle, marginBottom: 10, animation: "float 2.5s ease-in-out infinite" }} />
+            <div style={{ marginBottom: 10 }}>
+              <HappyFace color={C.lime} size={6} />
+            </div>
             <div style={{ fontSize: 24, color: C.lime, textShadow: `0 0 8px ${C.lime}30` }}>~ drop ur file here ~</div>
             <div style={{ fontSize: 17, color: C.sky, marginTop: 6 }}>or click to browse!! (pdf, docx, xlsx, txt)</div>
             <div style={{ fontSize: 16, color: C.hotPink, marginTop: 18, animation: "blink 1.5s ease infinite" }}>
