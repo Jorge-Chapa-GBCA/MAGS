@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { C } from "../styles/theme";
-import { Stars, Marquee, PixelBox, RetroBtn } from "./ui";
+import { Stars, Marquee, RetroBtn } from "./ui";
 import {
   uploadFile,
   identifyCredit,
