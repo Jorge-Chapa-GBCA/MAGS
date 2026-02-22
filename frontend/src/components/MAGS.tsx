@@ -48,7 +48,7 @@ export default function MAGS() {
             setBooting(false);
           } else {
             setBooting(true);
-            setTimeout(() => setBooting(false), 9000);
+            setTimeout(() => setBooting(false), 7000);
           }
         } else {
           setStep(STEPS.SETUP);
@@ -140,7 +140,7 @@ export default function MAGS() {
 
       {/* Stars — fun mode only (Stars component handles it internally too) */}
       {!isBoard && (
-        <div style={bootIn(0.5, "slideIn 1s ease")}>
+        <div style={bootIn(4.0, "slideIn 1s ease")}>
           <Stars />
         </div>
       )}
@@ -169,7 +169,7 @@ export default function MAGS() {
         padding: isBoard ? "12px 20px" : "10px 16px",
         borderBottom: isBoard ? "1px solid #E0E0E0" : `3px solid ${C.lime}`,
         display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8,
-        ...(isBoard ? {} : bootIn(0.8, "slideDown 0.5s ease")),
+        ...(isBoard ? {} : bootIn(3.5, "slideDown 0.5s ease")),
         ...(isBoard ? { boxShadow: "0 1px 3px rgba(0,0,0,0.06)" } : {}),
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -244,7 +244,7 @@ export default function MAGS() {
           borderBottom: `2px solid ${C.border}`,
           fontSize: 15,
           color: C.yellow,
-          ...bootIn(1.2, "slideIn 0.4s ease"),
+          ...bootIn(3.5, "slideIn 0.4s ease"),
         }}>
           <Marquee>{T.ticker}</Marquee>
         </div>

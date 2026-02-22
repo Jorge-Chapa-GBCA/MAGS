@@ -64,7 +64,7 @@ export function UploadScreen({ booting, bootIn, onFile, error }: Props) {
             {booting ? (
               <Typewriter
                 text={T.greeting}
-                delay={1600}
+                delay={300}
                 speed={80}
                 style={{ fontFamily: titleFont, fontSize: 28, color: C.sky, textShadow: "2px 2px 0 rgba(0,0,0,0.5)" }}
               />
@@ -75,7 +75,7 @@ export function UploadScreen({ booting, bootIn, onFile, error }: Props) {
             )}
             <div style={{
               fontFamily: titleFont, fontSize: 64,
-              animation: booting ? `scaleReveal 0.8s ease 2.4s both, rainbow 4s linear 2.4s infinite` : "rainbow 4s linear infinite",
+              animation: booting ? `scaleReveal 0.8s ease 1.2s both, rainbow 4s linear 1.2s infinite` : "rainbow 4s linear infinite",
               textShadow: "3px 3px 0 rgba(0,0,0,0.5)",
               marginTop: 4,
               ...(booting ? { opacity: 0 } : {}),
@@ -85,7 +85,7 @@ export function UploadScreen({ booting, bootIn, onFile, error }: Props) {
             {booting ? (
               <Typewriter
                 text={T.subtitle}
-                delay={3200}
+                delay={2200}
                 speed={15}
                 style={{ fontSize: 20, color: C.sky, marginTop: 10, lineHeight: 1.5 }}
               />
@@ -97,7 +97,7 @@ export function UploadScreen({ booting, bootIn, onFile, error }: Props) {
             {booting ? (
               <Typewriter
                 text={T.description}
-                delay={5200}
+                delay={4000}
                 speed={10}
                 style={{ fontSize: 16, color: C.lavender, marginTop: 12, lineHeight: 1.6, maxWidth: 520, marginLeft: "auto", marginRight: "auto" }}
               />
@@ -110,7 +110,7 @@ export function UploadScreen({ booting, bootIn, onFile, error }: Props) {
         )}
       </div>
 
-      <div style={!isBoard && booting ? { opacity: 0, animation: "tvOpen 0.8s ease 7.5s both", transformOrigin: "center center" } : (isBoard ? { animation: "slideIn 0.3s ease" } : {})}>
+      <div style={!isBoard && booting ? { opacity: 0, animation: "tvOpen 0.8s ease 3.0s both", transformOrigin: "center center" } : (isBoard ? { animation: "slideIn 0.3s ease" } : {})}>
         <PixelBox title={T.uploadBoxTitle} color={isBoard ? colors.green : C.darkGreen} style={{ flex: 1, display: "flex", flexDirection: "column" }}>
           <div
             onDrop={e => { e.preventDefault(); setDragOver(false); onFile(e.dataTransfer.files[0]); }}
@@ -169,7 +169,7 @@ export function UploadScreen({ booting, bootIn, onFile, error }: Props) {
         </PixelBox>
       )}
 
-      <div style={{ textAlign: "center", marginTop: 16, ...(isBoard ? {} : bootIn(8.5, "slideIn 0.4s ease")) }}>
+      <div style={{ textAlign: "center", marginTop: 16, ...(isBoard ? {} : bootIn(3.5, "slideIn 0.4s ease")) }}>
         <span style={{
           fontSize: 12,
           color: isBoard ? "#BBB" : "#556",
