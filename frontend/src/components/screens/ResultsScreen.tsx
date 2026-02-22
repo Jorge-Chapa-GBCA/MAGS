@@ -37,9 +37,9 @@ export function ResultsScreen({ results, creditInfo, fileName }: Props) {
       {/* Severity counters */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, margin: "14px 0" }}>
         {[
-          { k: "no_submission_form", l: "NO FORM", c: C.hotPink },
-          { k: "major_nc", l: "MAJOR NC", c: C.red },
-          { k: "minor_nc", l: "MINOR NC", c: C.orange },
+          { k: "no_submission_form", l: "CRITICAL", c: C.hotPink },
+          { k: "major_nc", l: "MAJOR", c: C.red },
+          { k: "minor_nc", l: "MINOR", c: C.orange },
           { k: "general", l: "GENERAL", c: C.cyan },
         ].map(s => (
           <div key={s.k} onClick={() => setFilter(filter === s.k ? "all" : s.k)} style={{

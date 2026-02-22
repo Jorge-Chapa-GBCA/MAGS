@@ -1,9 +1,9 @@
 import { C } from "../../styles/theme";
 
 const cfg: Record<string, { bg: string; label: string }> = {
-  no_submission_form: { bg: C.hotPink, label: "XX NO FORM XX" },
-  major_nc: { bg: C.red, label: "!! MAJOR NC !!" },
-  minor_nc: { bg: C.orange, label: "~ MINOR NC ~" },
+  no_submission_form: { bg: C.hotPink, label: "XX CRITICAL XX" },
+  major_nc: { bg: C.red, label: "!! MAJOR ISSUE !!" },
+  minor_nc: { bg: C.orange, label: "~ MINOR ISSUE ~" },
   general: { bg: C.cyan, label: "i GENERAL i" },
 };
 
