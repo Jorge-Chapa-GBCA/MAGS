@@ -610,7 +610,7 @@ export default function MAGS() {
                   <div style={{ fontSize: 16, color: C.hotPink, marginTop: 18, animation: "blink 1.5s ease infinite" }}>
                     {">>>"} waiting 4 upload {"<<<"}
                   </div>
-                  <input ref={inputRef} type="file" accept=".pdf,.docx,.doc,.txt,.xlsx,.csv" style={{ display: "none" }} onChange={e => onFile(e.target.files?.[0])} />
+                  <input ref={inputRef} type="file" accept=".pdf,.docx,.txt,.xlsx,.csv" style={{ display: "none" }} onChange={e => onFile(e.target.files?.[0])} />
                 </div>
               </PixelBox>
             </div>

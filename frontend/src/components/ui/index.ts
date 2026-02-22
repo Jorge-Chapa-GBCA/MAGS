@@ -6,3 +6,4 @@ export { Loader } from "./Loader";
 export { ScoreBar } from "./ScoreBar";
 export { Badge } from "./Badge";
 export { HazardBar } from "./HazardBar";
+export { ErrorBoundary } from "./ErrorBoundary";

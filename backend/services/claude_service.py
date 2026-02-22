@@ -8,6 +8,7 @@ from typing import Optional
 
 from anthropic import Anthropic
 from dotenv import load_dotenv
+import httpx
 
 from backend.models.schemas import CreditInfo, AnalysisResult, Finding
 from backend.services.reference_loader import get_reference, get_references_by_prefix
@@ -38,6 +39,7 @@ def compute_score(findings: list[Finding], strengths: list[str]) -> int:
 load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
 
 MODEL = "claude-sonnet-4-20250514"
+API_TIMEOUT = httpx.Timeout(timeout=120.0, connect=10.0)
 
 # Env-level key loaded once at import time
 _env_api_key: Optional[str] = os.environ.get("ANTHROPIC_API_KEY")
@@ -48,7 +50,7 @@ def _get_client(api_key: Optional[str] = None) -> Anthropic:
     key = api_key or _env_api_key
     if not key:
         raise ValueError("No API key provided and none found in environment")
-    return Anthropic(api_key=key)
+    return Anthropic(api_key=key, timeout=API_TIMEOUT)
 
 
 def _parse_json(text: str) -> dict:
@@ -82,13 +84,13 @@ def identify_credit(doc_text: str, filename: str, api_key: Optional[str] = None)
     guidelines_docs = get_references_by_prefix("submission_guidelines")
 
     # Include excerpts from all available guideline versions
-    max_per_version = 15000 // max(len(guidelines_docs), 1)
+    max_per_version = 40000 // max(len(guidelines_docs), 1)
     guidelines_context = ""
     for key, text in sorted(guidelines_docs.items()):
         version_label = key.replace("submission_guidelines", "Submission Guidelines").replace("_", " ")
         guidelines_context += f"\n--- {version_label} (excerpt) ---\n{text[:max_per_version]}\n"
 
-    doc_excerpt = doc_text[:5000]
+    doc_excerpt = doc_text[:20000]
 
     system_prompt = f"""You are a Green Star certification expert working for the Green Building Council of Australia (GBCA).
 
@@ -135,8 +137,8 @@ def analyse_submission(
     common_language = get_reference("common_language_guide")
     guidelines_docs = get_references_by_prefix("submission_guidelines")
 
-    # Build reference context — truncate each to fit within token limits
-    max_ref_chars = 10000
+    # Build reference context — budget fits comfortably in 200k token window
+    max_ref_chars = 30000
     ref_context = ""
     max_per_version = max_ref_chars // max(len(guidelines_docs), 1)
     for key, text in sorted(guidelines_docs.items()):
@@ -147,7 +149,7 @@ def analyse_submission(
     if common_language:
         ref_context += f"\n--- COMMON LANGUAGE GUIDE (excerpt) ---\n{common_language[:max_ref_chars]}\n"
 
-    doc_excerpt = doc_text[:10000]
+    doc_excerpt = doc_text[:50000]
 
     system_prompt = f"""You are a senior Green Star assessor for the Green Building Council of Australia (GBCA).
 

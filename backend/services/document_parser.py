@@ -77,8 +77,12 @@ def parse_document(file_bytes: bytes, filename: str) -> ParsedDocument:
 
     if ext == "pdf":
         return parse_pdf(file_bytes, filename)
-    elif ext in ("docx", "doc"):
+    elif ext == "docx":
         return parse_docx(file_bytes, filename)
+    elif ext == "doc":
+        raise ValueError(
+            "Legacy .doc format is not supported. Please re-save as .docx in Microsoft Word."
+        )
     elif ext in ("xlsx", "xls"):
         return parse_xlsx(file_bytes, filename)
     else:
