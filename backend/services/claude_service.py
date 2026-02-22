@@ -165,9 +165,9 @@ Check the submission for compliance across three categories:
 3. TERMINOLOGY: Non-standard terms vs GBCA common language, incorrect credit references
 
 For each finding, assign a severity:
-- no_submission_form: The required Green Star submission form/template is completely missing — automatic fail
-- major_nc: Major non-conformance — will definitely cause assessment issues or rejection
-- minor_nc: Minor non-conformance — may cause queries or delays
+- no_submission_form: Critical — the required Green Star submission form/template is completely missing (automatic fail)
+- major_nc: Major issue — will definitely cause assessment issues or rejection
+- minor_nc: Minor issue — may cause queries or delays
 - general: General issue — minor improvement suggestions
 
 Respond ONLY with a valid JSON object (no markdown, no explanation):

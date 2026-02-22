@@ -40,7 +40,7 @@ class AnalyseRequest(BaseModel):
 class Finding(BaseModel):
     id: str
     category: str  # structural | content | terminology
-    severity: str  # major_nc | minor_nc | general
+    severity: str  # no_submission_form (critical) | major_nc | minor_nc | general
     title: str
     description: str
     location: str = ""
