@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import os
 import uuid
 import time
@@ -30,6 +31,8 @@ from backend.services.claude_service import identify_credit, analyse_submission
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api")
+
+MAX_UPLOAD_BYTES = 50 * 1024 * 1024  # 50 MB
 
 # In-memory session store: session_id -> {doc, timestamp}
 _sessions: dict[str, dict] = {}
@@ -65,10 +68,12 @@ async def upload_reference(file: UploadFile = File(...)):
     file_bytes = await file.read()
     if not file_bytes:
         raise HTTPException(status_code=400, detail="Empty file")
+    if len(file_bytes) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail="File exceeds 50 MB limit")
 
     filename = file.filename or "unknown.pdf"
     try:
-        doc = parse_pdf(file_bytes, filename)
+        doc = await asyncio.to_thread(parse_pdf, file_bytes, filename)
     except Exception as e:
         logger.error(f"Reference parse error for {filename}: {e}")
         raise HTTPException(status_code=400, detail=f"Could not parse PDF: {e}")
@@ -91,7 +96,8 @@ async def validate_key(x_api_key: Optional[str] = Header(None)):
 
     try:
         client = Anthropic(api_key=key)
-        client.messages.create(
+        await asyncio.to_thread(
+            client.messages.create,
             model="claude-sonnet-4-20250514",
             max_tokens=10,
             messages=[{"role": "user", "content": "Say OK"}],
@@ -123,10 +129,12 @@ async def upload_file(file: UploadFile = File(...)):
     file_bytes = await file.read()
     if not file_bytes:
         raise HTTPException(status_code=400, detail="Empty file")
+    if len(file_bytes) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail="File exceeds 50 MB limit")
 
     filename = file.filename or "unknown"
     try:
-        doc = parse_document(file_bytes, filename)
+        doc = await asyncio.to_thread(parse_document, file_bytes, filename)
     except Exception as e:
         logger.error(f"Parse error for {filename}: {e}")
         raise HTTPException(status_code=400, detail=f"Could not parse file: {e}")
@@ -155,7 +163,9 @@ async def identify(req: IdentifyRequest, x_api_key: Optional[str] = Header(None)
 
     doc = session["doc"]
     try:
-        credit = identify_credit(doc.text, doc.filename, api_key=x_api_key)
+        credit = await asyncio.to_thread(
+            identify_credit, doc.text, doc.filename, api_key=x_api_key
+        )
     except Exception as e:
         logger.error(f"Identify error: {e}")
         raise HTTPException(status_code=500, detail=f"Credit identification failed: {e}")
@@ -174,7 +184,9 @@ async def analyse(req: AnalyseRequest, x_api_key: Optional[str] = Header(None)):
 
     doc = session["doc"]
     try:
-        result = analyse_submission(doc.text, doc.filename, req.credit_info, api_key=x_api_key)
+        result = await asyncio.to_thread(
+            analyse_submission, doc.text, doc.filename, req.credit_info, api_key=x_api_key
+        )
     except Exception as e:
         logger.error(f"Analysis error: {e}")
         raise HTTPException(status_code=500, detail=f"Analysis failed: {e}")
