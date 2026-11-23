@@ -6,9 +6,8 @@ import logging
 import os
 from typing import Optional
 
-from anthropic import Anthropic
+from anthropic import Anthropic, Timeout
 from dotenv import load_dotenv
-import httpx
 
 from backend.models.schemas import CreditInfo, AnalysisResult, Finding
 from backend.services.reference_loader import get_reference, get_references_by_prefix
@@ -39,7 +38,7 @@ def compute_score(findings: list[Finding], strengths: list[str]) -> int:
 load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
 
 MODEL = "claude-sonnet-4-20250514"
-API_TIMEOUT = httpx.Timeout(timeout=120.0, connect=10.0)
+API_TIMEOUT = Timeout(timeout=120.0, connect=10.0)
 
 # Env-level key loaded once at import time
 _env_api_key: Optional[str] = os.environ.get("ANTHROPIC_API_KEY")
