@@ -37,7 +37,12 @@ def compute_score(findings: list[Finding], strengths: list[str]) -> int:
 
 load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
 
-MODEL = "claude-sonnet-4-20250514"
+# claude-sonnet-4-20250514 was retired on 2026-06-15; requests to it now fail.
+MODEL = "claude-sonnet-5-5"
+# Sonnet 5.5 thinks by default. "between_tools" turns extended thinking off,
+# matching how the app behaved on Sonnet 4 (and keeping max_tokens for the reply).
+THINKING = {"type": "between_tools"}
+OUTPUT_CONFIG = {"effort": "high"}
 API_TIMEOUT = Timeout(timeout=120.0, connect=10.0)
 
 # Env-level key loaded once at import time
@@ -50,6 +55,14 @@ def _get_client(api_key: Optional[str] = None) -> Anthropic:
     if not key:
         raise ValueError("No API key provided and none found in environment")
     return Anthropic(api_key=key, timeout=API_TIMEOUT)
+
+
+def _check_refusal(response) -> None:
+    """Raise a clear error when the model declines instead of returning JSON."""
+    if response.stop_reason == "refusal":
+        details = getattr(response, "stop_details", None)
+        category = getattr(details, "category", None) if details else None
+        raise ValueError(f"Claude declined to process this document (category: {category or 'unspecified'})")
 
 
 def _parse_json(text: str) -> dict:
@@ -106,7 +119,8 @@ Respond ONLY with a valid JSON object (no markdown, no explanation):
     response = client.messages.create(
         model=MODEL,
         max_tokens=1000,
-        temperature=0,
+        thinking=THINKING,
+        output_config=OUTPUT_CONFIG,
         system=system_prompt,
         messages=[
             {
@@ -116,6 +130,7 @@ Respond ONLY with a valid JSON object (no markdown, no explanation):
         ],
     )
 
+    _check_refusal(response)
     text = "".join(block.text for block in response.content if hasattr(block, "text"))
     data = _parse_json(text)
 
@@ -176,7 +191,8 @@ Respond ONLY with a valid JSON object (no markdown, no explanation):
     response = client.messages.create(
         model=MODEL,
         max_tokens=8000,
-        temperature=0,
+        thinking=THINKING,
+        output_config=OUTPUT_CONFIG,
         system=system_prompt,
         messages=[
             {
@@ -186,6 +202,7 @@ Respond ONLY with a valid JSON object (no markdown, no explanation):
         ],
     )
 
+    _check_refusal(response)
     text = "".join(block.text for block in response.content if hasattr(block, "text"))
     data = _parse_json(text)
 

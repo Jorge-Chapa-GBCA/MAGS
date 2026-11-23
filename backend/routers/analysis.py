@@ -8,7 +8,7 @@ import logging
 
 from typing import Optional
 
-from anthropic import Anthropic
+from anthropic import Anthropic, AuthenticationError, PermissionDeniedError
 from fastapi import APIRouter, UploadFile, File, Header, HTTPException
 
 from backend.models.schemas import (
@@ -26,7 +26,7 @@ from backend.services.reference_loader import (
     store_reference,
     _key_for_filename,
 )
-from backend.services.claude_service import identify_credit, analyse_submission
+from backend.services.claude_service import identify_credit, analyse_submission, MODEL, THINKING, OUTPUT_CONFIG
 
 logger = logging.getLogger(__name__)
 
@@ -98,14 +98,20 @@ async def validate_key(x_api_key: Optional[str] = Header(None)):
         client = Anthropic(api_key=key)
         await asyncio.to_thread(
             client.messages.create,
-            model="claude-sonnet-4-20250514",
+            model=MODEL,
             max_tokens=10,
+            thinking=THINKING,
+            output_config=OUTPUT_CONFIG,
             messages=[{"role": "user", "content": "Say OK"}],
         )
         return {"valid": True}
-    except Exception as e:
+    except (AuthenticationError, PermissionDeniedError) as e:
         logger.warning(f"API key validation failed: {e}")
         raise HTTPException(status_code=401, detail=f"Invalid API key: {e}")
+    except Exception as e:
+        # Not a key problem (e.g. retired model, rate limit, network) - say so
+        logger.warning(f"API key check failed for a non-auth reason: {e}")
+        raise HTTPException(status_code=502, detail=f"Could not reach Claude: {e}")
 
 
 # ---------------------------------------------------------------------------
